@@ -42,11 +42,11 @@ async def handle_webhook(request: Request):
             tag["name"] in ["#partnerpage", "#mainpartnerpage"]
             for tag in data["post"]["current"]["tags"]
         ):
-            return {"message": "Partner pages do not alert TG Bot"}
+            raise HTTPException(status_code=400, detail="Partner pages do not alert TG Bot")
         url_to_post = data["post"]["current"]["url"]
 
         if not url_to_post:
-            return {"error": "No URL provided"}
+            raise HTTPException(status_code=400, detail="No URL provided")
 
         # Prepare payload for sending a message to the Telegram channel
         payload = {
@@ -58,9 +58,9 @@ async def handle_webhook(request: Request):
         response = requests.post(TELEGRAM_API_URL, json=payload)
 
         if response.status_code != 200:
-            return {"error": "Failed to send message to Telegram"}
+            raise HTTPException(status_code=500, detail="Failed to send message to Telegram")
 
         return {"message": "URL posted successfully"}
     except Exception as e:
         print(e)
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
