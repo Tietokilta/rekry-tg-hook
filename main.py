@@ -29,11 +29,15 @@ async def handle_webhook(request: Request):
         # Print all headers
         headers = request.headers
         req_payload = await request.body()
+
+        signature = headers.get("x-ghost-signature").split(", ")
+        timestamp = signature[1][2:]
+
         sha256 = hmac.new(
-            GHOST_HOOK_SECRET.encode("utf-8"), req_payload, hashlib.sha256
+            GHOST_HOOK_SECRET.encode("utf-8"), req_payload + timestamp, hashlib.sha256
         ).hexdigest()
         # Check authorization 
-        if headers.get("x-ghost-signature").split(", ")[0] != f"sha256={sha256}":
+        if signature[0] != f"sha256={sha256}":
             raise HTTPException(status_code=403, detail="Forbidden")
 
         data = await request.json()
