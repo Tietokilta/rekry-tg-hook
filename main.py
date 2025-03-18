@@ -34,7 +34,7 @@ async def handle_webhook(request: Request):
         timestamp = signature[1][2:]
 
         sha256 = hmac.new(
-            GHOST_HOOK_SECRET.encode("utf-8"), req_payload + timestamp, hashlib.sha256
+            GHOST_HOOK_SECRET.encode("utf-8"), req_payload + timestamp.encode(), hashlib.sha256
         ).hexdigest()
         # Check authorization 
         if signature[0] != f"sha256={sha256}":
@@ -46,7 +46,7 @@ async def handle_webhook(request: Request):
             tag["name"] in ["#partnerpage", "#mainpartnerpage"]
             for tag in data["post"]["current"]["tags"]
         ):
-            raise HTTPException(status_code=400, detail="Partner pages do not alert TG Bot")
+            return {"message": "Partner pages do not alert TG Bot"}
         url_to_post = data["post"]["current"]["url"]
 
         if not url_to_post:
